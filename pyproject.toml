@@ -16,6 +16,9 @@ select = ["E", "F", "I", "UP", "B"]
 pythonpath = ["."]
 testpaths = ["tests"]
 addopts = "-q"
+markers = [
+    "integration: tests that hit the network or external services (skipped in CI)",
+]
 
 [tool.mypy]
 python_version = "3.11"

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Argus</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        background: radial-gradient(circle at 30% 20%, #0b3d2e, #04141f 70%);
+        color: #d7e8e0;
+      }
+      .card {
+        max-width: 560px;
+        padding: 2.5rem;
+        border: 1px solid #1f6f54;
+        border-radius: 14px;
+        background: rgba(4, 20, 31, 0.6);
+        backdrop-filter: blur(6px);
+      }
+      h1 { margin: 0 0 0.25rem; letter-spacing: 0.08em; }
+      .sub { color: #7fb3a0; margin-bottom: 1.5rem; }
+      .status { font-size: 0.95rem; padding: 0.6rem 0.8rem; border-radius: 8px; background: #07242f; }
+      a { color: #7fffd4; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>ARGUS</h1>
+      <div class="sub">Earth-observation agent. Phase 1 skeleton.</div>
+      <div id="status" class="status">checking gateway...</div>
+      <p>Full map and chat UI lands in Phase 5. Gateway docs: <a href="/api/docs">/api/docs</a></p>
+    </div>
+    <script>
+      fetch("/api/health")
+        .then((r) => r.json())
+        .then((d) => {
+          document.getElementById("status").textContent =
+            "gateway: " + d.status + " (v" + d.version + ")";
+        })
+        .catch(() => {
+          document.getElementById("status").textContent = "gateway: unreachable";
+        });
+    </script>
+  </body>
+</html>

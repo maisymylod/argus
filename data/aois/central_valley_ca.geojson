@@ -1,0 +1,20 @@
+{
+  "type": "Feature",
+  "bbox": [-121.6, 36.8, -121.4, 37.0],
+  "properties": {
+    "name": "Central Valley, CA",
+    "note": "Public agricultural area, strong seasonal NDVI signal"
+  },
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [-121.6, 36.8],
+        [-121.4, 36.8],
+        [-121.4, 37.0],
+        [-121.6, 37.0],
+        [-121.6, 36.8]
+      ]
+    ]
+  }
+}

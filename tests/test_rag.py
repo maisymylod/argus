@@ -38,10 +38,10 @@ def test_agent_kb_only_answer_has_citations():
 
     from services.agent.graph import build_graph
     from services.agent.models import SYSTEM_PROMPT, ScriptedModel
-    from services.agent.run import _scripted_answer
+    from services.agent.service import scripted_answer
 
     planned = [{"name": "retrieve_knowledge", "args": {"query": "Sentinel-2 revisit time"}}]
-    graph = build_graph(ScriptedModel(planned, _scripted_answer("central_valley_ca", "", "")))
+    graph = build_graph(ScriptedModel(planned, scripted_answer("central_valley_ca", "", "")))
     final = graph.invoke(
         {
             "messages": [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content="revisit?")],

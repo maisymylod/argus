@@ -73,9 +73,13 @@ kb-demo: ## Ask a sensor-metadata question answered from the knowledge base (RAG
 mcp-tools: ## List tools exposed by the MCP server over stdio
 	python -m services.mcp_server.mcp_client
 
+.PHONY: web-dev
+web-dev: ## Run the frontend dev server (proxies /api to the gateway on :8000)
+	cd web && npm install && npm run dev
+
 .PHONY: demo
-demo: ## End-to-end demo (lands in Phase 5)
-	@echo "demo: end-to-end demo lands in Phase 5"
+demo: up ## Bring up the stack and print the browser URL
+	@echo "Open http://localhost:$${WEB_PORT:-8080} and ask about vegetation change."
 
 .PHONY: k8s-up
 k8s-up: ## Deploy full stack to a local kind cluster (lands in Phase 6)

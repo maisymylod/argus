@@ -45,5 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build images
-        run: docker compose build gateway web
+      - name: Validate compose config
+        run: docker compose config >/dev/null
+      - name: Build web image
+        run: docker compose build web

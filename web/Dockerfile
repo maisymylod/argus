@@ -1,8 +1,12 @@
-# Phase 1 web stub: static placeholder served by nginx, proxying /api to the gateway.
-# Replaced by the React + TypeScript + Redux + MapLibre/deck.gl app in Phase 5.
+# Build the React app, then serve the static bundle with nginx.
+FROM node:22-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm install
+COPY . .
+RUN npm run build
+
 FROM nginx:1.27-alpine
-
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY stub/ /usr/share/nginx/html/
-
+COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80

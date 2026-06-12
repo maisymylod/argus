@@ -19,7 +19,9 @@ services:
       retries: 10
 
   gateway:
-    build: ./services/gateway
+    build:
+      context: .
+      dockerfile: services/gateway/Dockerfile
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://argus:change-me-locally@db:5432/argus}
       STAC_URL: ${STAC_URL:-https://planetarycomputer.microsoft.com/api/stac/v1}

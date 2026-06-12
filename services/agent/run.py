@@ -1,4 +1,4 @@
-"""Run a scripted earth-observation query through the agent.
+"""Run a scripted earth-observation query through the agent (CLI).
 
 Example:
   python -m services.agent --aoi central_valley_ca --before 2023-06-15 --after 2023-09-15
@@ -10,38 +10,9 @@ deterministic scripted plan drives the same graph so the demo runs offline.
 from __future__ import annotations
 
 import argparse
-import os
 import sys
 
-from langchain_core.messages import HumanMessage, SystemMessage
-
-from .graph import build_graph
-from .models import SYSTEM_PROMPT, get_model
-
-
-def _scripted_answer(aoi: str, before: str, after: str):
-    def answer(results: list[dict]) -> str:
-        veg = next((r for r in results if "stats" in r), {})
-        kb = next((r for r in results if "chunks" in r), {})
-        cites = [c for r in results for c in r.get("citations", [])]
-        cite_str = "; ".join(f"{c['source']} ({c['detail']})" for c in cites) or "none"
-
-        parts = []
-        if veg:
-            parts.append(
-                f"Between {before} and {after}, {veg['summary']} for {veg.get('aoi', aoi)}. "
-                "Rendered NDVI and change overlays plus a GeoJSON detection layer are attached."
-            )
-        top_chunk = (kb.get("chunks") or [{}])[0]
-        if top_chunk.get("text"):
-            parts.append(
-                f"From the knowledge base ({top_chunk['source']} / {top_chunk['heading']}): "
-                f"{' '.join(top_chunk['text'].split())[:200]}"
-            )
-        parts.append(f"Sources: {cite_str}.")
-        return " ".join(parts)
-
-    return answer
+from .service import run_query
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -54,46 +25,24 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--kb-only", action="store_true", help="answer a metadata question via RAG")
     args = parser.parse_args(argv)
 
-    if args.kb_only:
-        query = args.query or "What is Sentinel-2's revisit time and which bands compute NDVI?"
-        planned = [{"name": "retrieve_knowledge", "args": {"query": query}}]
-    else:
-        query = args.query or (
-            f"Show vegetation change near {args.aoi} between {args.before} and {args.after}, "
-            f"and note the sensor's revisit time."
-        )
-        planned = [
-            {
-                "name": "vegetation_change",
-                "args": {
-                    "aoi": args.aoi,
-                    "before": args.before,
-                    "after": args.after,
-                    "demo": not args.live,
-                },
-            },
-            {"name": "retrieve_knowledge", "args": {"query": query}},
-        ]
+    result = run_query(
+        aoi=args.aoi,
+        before=args.before,
+        after=args.after,
+        query=args.query,
+        kb_only=args.kb_only,
+        live=args.live,
+    )
 
-    model = get_model(planned, _scripted_answer(args.aoi, args.before, args.after))
-    graph = build_graph(model)
-
-    initial = {
-        "messages": [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=query)],
-        "artifacts": [],
-        "citations": [],
-    }
-    final = graph.invoke(initial)
-
-    mode = "live Claude" if os.environ.get("ANTHROPIC_API_KEY") else "scripted (offline)"
-    print(f"== Argus agent ({mode}) ==")
-    print(f"Q: {query}\n")
-    print(f"A: {final['messages'][-1].content}\n")
-    print("Artifacts:")
-    for art in final["artifacts"]:
-        print(f"  - [{art['kind']}/{art.get('role', '')}] {art['uri']}")
+    print(f"== Argus agent ({result['mode']}) ==")
+    print(f"Q: {result['query']}\n")
+    print(f"A: {result['answer']}\n")
+    if result["artifacts"]:
+        print("Artifacts:")
+        for art in result["artifacts"]:
+            print(f"  - [{art['kind']}/{art.get('role', '')}] {art['url']}")
     print("Citations:")
-    for cite in final["citations"]:
+    for cite in result["citations"]:
         print(f"  - {cite['source']}: {cite['detail']}")
     return 0
 

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: argus
+description: Argus earth-observation agent stack (gateway API, web, Postgres + pgvector)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

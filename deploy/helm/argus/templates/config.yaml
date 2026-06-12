@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argus-gateway-env
+  labels:
+    {{- include "argus.labels" . | nindent 4 }}
+data:
+  LOG_LEVEL: {{ .Values.gateway.logLevel | quote }}
+  STAC_URL: {{ .Values.gateway.stacUrl | quote }}
+  ANTHROPIC_MODEL: {{ .Values.gateway.model | quote }}
+  ANTHROPIC_MODEL_HEAVY: {{ .Values.gateway.modelHeavy | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argus-db-init
+  labels:
+    {{- include "argus.labels" . | nindent 4 }}
+data:
+  01-extensions.sql: |
+    CREATE EXTENSION IF NOT EXISTS vector;
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: argus-secrets
+  labels:
+    {{- include "argus.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  DATABASE_URL: postgresql://{{ .Values.postgres.user }}:{{ .Values.postgres.password }}@db:5432/{{ .Values.postgres.db }}
+  ANTHROPIC_API_KEY: {{ .Values.anthropicApiKey | quote }}

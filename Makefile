@@ -82,8 +82,12 @@ demo: up ## Bring up the stack and print the browser URL
 	@echo "Open http://localhost:$${WEB_PORT:-8080} and ask about vegetation change."
 
 .PHONY: k8s-up
-k8s-up: ## Deploy full stack to a local kind cluster (lands in Phase 6)
-	@echo "k8s-up: kind + Helm deploy lands in Phase 6"
+k8s-up: ## Build images and deploy the full stack to a local kind cluster
+	bash scripts/kind-up.sh
+
+.PHONY: k8s-down
+k8s-down: ## Delete the local kind cluster
+	bash scripts/kind-down.sh
 
 .PHONY: clean
 clean: ## Stop stack and remove volumes

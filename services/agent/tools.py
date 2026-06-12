@@ -126,9 +126,11 @@ class RetrieveKnowledgeArgs(BaseModel):
 def retrieve_knowledge(query: str, k: int = 4) -> dict:
     """Retrieve grounding passages from the geospatial knowledge base.
 
-    Phase 3 returns an empty result; Phase 4 wires this to pgvector retrieval.
+    Backed by RAG retrieval (in-memory by default, pgvector when configured).
     """
-    return {"query": query, "chunks": [], "citations": [], "note": "RAG retrieval lands in Phase 4"}
+    from services.rag.retrieve import retrieve
+
+    return retrieve(query, k)
 
 
 def _spec(name: str, args_model: type[BaseModel], fn: Callable[..., dict]) -> ToolSpec:

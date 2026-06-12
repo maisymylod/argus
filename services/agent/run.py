@@ -22,13 +22,24 @@ from .models import SYSTEM_PROMPT, get_model
 def _scripted_answer(aoi: str, before: str, after: str):
     def answer(results: list[dict]) -> str:
         veg = next((r for r in results if "stats" in r), {})
+        kb = next((r for r in results if "chunks" in r), {})
         cites = [c for r in results for c in r.get("citations", [])]
         cite_str = "; ".join(f"{c['source']} ({c['detail']})" for c in cites) or "none"
-        return (
-            f"Between {before} and {after}, {veg.get('summary', 'no change computed')} "
-            f"for {veg.get('aoi', aoi)}. Rendered NDVI and change overlays plus a GeoJSON "
-            f"detection layer are attached. Sources: {cite_str}."
-        )
+
+        parts = []
+        if veg:
+            parts.append(
+                f"Between {before} and {after}, {veg['summary']} for {veg.get('aoi', aoi)}. "
+                "Rendered NDVI and change overlays plus a GeoJSON detection layer are attached."
+            )
+        top_chunk = (kb.get("chunks") or [{}])[0]
+        if top_chunk.get("text"):
+            parts.append(
+                f"From the knowledge base ({top_chunk['source']} / {top_chunk['heading']}): "
+                f"{' '.join(top_chunk['text'].split())[:200]}"
+            )
+        parts.append(f"Sources: {cite_str}.")
+        return " ".join(parts)
 
     return answer
 
@@ -40,25 +51,29 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--after", default="2023-09-15")
     parser.add_argument("--query", default=None)
     parser.add_argument("--live", action="store_true", help="use live STAC instead of demo scenes")
+    parser.add_argument("--kb-only", action="store_true", help="answer a metadata question via RAG")
     args = parser.parse_args(argv)
 
-    query = args.query or (
-        f"Show vegetation change near {args.aoi} between {args.before} and {args.after}, "
-        f"and note the sensor's revisit time."
-    )
-
-    planned = [
-        {
-            "name": "vegetation_change",
-            "args": {
-                "aoi": args.aoi,
-                "before": args.before,
-                "after": args.after,
-                "demo": not args.live,
+    if args.kb_only:
+        query = args.query or "What is Sentinel-2's revisit time and which bands compute NDVI?"
+        planned = [{"name": "retrieve_knowledge", "args": {"query": query}}]
+    else:
+        query = args.query or (
+            f"Show vegetation change near {args.aoi} between {args.before} and {args.after}, "
+            f"and note the sensor's revisit time."
+        )
+        planned = [
+            {
+                "name": "vegetation_change",
+                "args": {
+                    "aoi": args.aoi,
+                    "before": args.before,
+                    "after": args.after,
+                    "demo": not args.live,
+                },
             },
-        },
-        {"name": "retrieve_knowledge", "args": {"query": query}},
-    ]
+            {"name": "retrieve_knowledge", "args": {"query": query}},
+        ]
 
     model = get_model(planned, _scripted_answer(args.aoi, args.before, args.after))
     graph = build_graph(model)

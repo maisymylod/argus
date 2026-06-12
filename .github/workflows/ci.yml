@@ -29,6 +29,7 @@ jobs:
             -r services/gateway/requirements.txt \
             -r services/imagery/requirements.txt \
             -r services/ml/requirements.txt \
+            langgraph==0.2.60 langchain-core==0.3.28 mcp==1.2.0 \
             pytest==8.3.4 httpx==0.28.1
       - run: pytest -m "not integration"
 

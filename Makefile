@@ -61,6 +61,14 @@ secret-scan: ## Scan tracked files for committed secrets
 seed: ## Ingest knowledge base into pgvector (lands in Phase 4)
 	@echo "seed: knowledge-base ingestion lands in Phase 4"
 
+.PHONY: agent-demo
+agent-demo: ## Run a scripted agent query (offline unless ANTHROPIC_API_KEY is set)
+	python -m services.agent --aoi central_valley_ca --before 2023-06-15 --after 2023-09-15
+
+.PHONY: mcp-tools
+mcp-tools: ## List tools exposed by the MCP server over stdio
+	python -m services.mcp_server.mcp_client
+
 .PHONY: demo
 demo: ## End-to-end demo (lands in Phase 5)
 	@echo "demo: end-to-end demo lands in Phase 5"

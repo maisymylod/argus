@@ -1,0 +1,28 @@
+# Local-first defaults: images are built and loaded into kind, so pullPolicy is
+# Never to avoid registry lookups. The same chart works against a real cluster
+# by overriding image references and pullPolicy.
+images:
+  gateway: argus-gateway:local
+  web: argus-web:local
+  pullPolicy: Never
+
+postgres:
+  image: pgvector/pgvector:pg16
+  user: argus
+  password: change-me-locally
+  db: argus
+
+gateway:
+  replicas: 1
+  port: 8000
+  logLevel: INFO
+  stacUrl: https://planetarycomputer.microsoft.com/api/stac/v1
+  model: claude-sonnet-4-6
+  modelHeavy: claude-opus-4-8
+
+web:
+  replicas: 1
+  nodePort: 30080
+
+# Provide via: helm ... --set anthropicApiKey=sk-ant-...  (empty runs the scripted agent)
+anthropicApiKey: ""

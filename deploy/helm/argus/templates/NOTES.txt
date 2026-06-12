@@ -1,0 +1,12 @@
+Argus is deploying to namespace {{ .Release.Namespace }}.
+
+Watch rollout:
+  kubectl -n {{ .Release.Namespace }} rollout status deploy/gateway
+  kubectl -n {{ .Release.Namespace }} rollout status deploy/web
+
+On a kind cluster created with deploy/k8s/kind-cluster.yaml, the web NodePort
+{{ .Values.web.nodePort }} is mapped to the host. Open:
+  http://localhost:8080
+
+The web pod proxies /api to the gateway Service. The agent runs in scripted
+mode unless anthropicApiKey was set at install time.

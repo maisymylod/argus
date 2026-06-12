@@ -22,7 +22,8 @@ while IFS= read -r file; do
   [[ "$file" =~ $EXCLUDE_RE ]] && continue
   [[ -f "$file" ]] || continue
   for pat in "${PATTERNS[@]}"; do
-    if grep -nIEq "$pat" "$file"; then
+    # -e guards patterns that begin with a dash (e.g. the private-key header).
+    if grep -nIEq -e "$pat" "$file"; then
       echo "POTENTIAL SECRET in $file (pattern: $pat)"
       found=1
     fi

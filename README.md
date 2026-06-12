@@ -1,15 +1,12 @@
 # Argus
 
-Natural-language exploration of public earth-observation imagery, powered by an
-LLM agent that calls geospatial tools over the Model Context Protocol (MCP),
-grounds its answers with retrieval (RAG), and renders results on an interactive
-WebGL map. One coherent system that exercises full-stack AI interaction,
-tool-calling orchestration, MCP, vector search, image and ML processing, and
-container orchestration across local and cluster environments.
-
-![Argus demo](docs/demo.gif)
-
-> The GIF above is a placeholder until recorded. See `docs/DEMO.md`.
+Natural-language exploration of public earth-observation imagery. An LLM agent
+plans and calls geospatial tools, grounds its answers with retrieval over a
+knowledge base, and animates the results onto an interactive WebGL map. The same
+tools are exposed for in-process tool-calling and over the Model Context
+Protocol, so any MCP host can drive them. It runs offline with a deterministic
+scripted agent and switches to Claude and live Sentinel-2 imagery when keys are
+present.
 
 ## Data policy
 
@@ -44,22 +41,10 @@ The geospatial tools are defined once (`services/agent/tools.py`) and exposed tw
 ways: bound to the model for tool-calling, and served over MCP by a FastMCP stdio
 server that any MCP host (for example Claude Desktop) can connect to.
 
-## JD skill to file map
-
-| Skill | Where it lives |
-| --- | --- |
-| React / Redux, graphics-intensive web | `web/` (Redux Toolkit store, RTK Query, deck.gl `MapView`) |
-| Python applications | `services/` |
-| Web services and distributed applications | `services/gateway/`, `docker-compose.yml`, `deploy/` |
-| RAG pipelines | `services/rag/` (chunk, embed, store, retrieve) |
-| Tool callers / AI orchestration | `services/agent/graph.py`, `services/agent/tools.py` |
-| Model Context Protocol | `services/mcp_server/` |
-| Vector / high-performance databases | Postgres + pgvector (`services/rag/store.py`, `services/rag/schema.sql`) |
-| Image data processing | `services/imagery/` (rasterio, STAC, NDVI, change) |
-| Machine learning | `services/ml/` (onnxruntime + model card) |
-| Kubernetes / container orchestration | `deploy/helm/`, `deploy/k8s/`, `scripts/kind-*.sh`, Dockerfiles |
-| Linux, SSH, scripting | `scripts/`, `Makefile` |
-| Secrets discipline | `.env.example`, `scripts/secret-scan.sh`, `.pre-commit-config.yaml` |
+The imagery pipeline pulls Sentinel-2 L2A scenes, computes NDVI, and runs an
+ONNX vegetation-change pass that emits GeoJSON detections and PNG overlays. RAG
+runs on Postgres with pgvector or an in-memory fallback. The whole stack runs the
+same images under Docker Compose and on a kind Kubernetes cluster.
 
 ## Run it
 

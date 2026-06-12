@@ -16,9 +16,10 @@ def test_list_aois_returns_known_aoi():
         assert len(a["bbox"]) == 4
 
 
-def test_retrieve_knowledge_phase3_stub():
-    out = get_spec("retrieve_knowledge").fn(query="revisit time", k=2)
-    assert out["chunks"] == []
+def test_retrieve_knowledge_is_wired_to_rag():
+    out = get_spec("retrieve_knowledge").fn(query="Sentinel-2 revisit time", k=2)
+    assert out["chunks"], "retrieve_knowledge should return KB chunks in Phase 4"
+    assert out["citations"][0]["source"].endswith(".md") or "#" in out["citations"][0]["source"]
 
 
 def test_scripted_agent_end_to_end():

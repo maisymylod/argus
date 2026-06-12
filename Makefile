@@ -58,12 +58,16 @@ secret-scan: ## Scan tracked files for committed secrets
 	bash scripts/secret-scan.sh
 
 .PHONY: seed
-seed: ## Ingest knowledge base into pgvector (lands in Phase 4)
-	@echo "seed: knowledge-base ingestion lands in Phase 4"
+seed: ## Ingest the knowledge base into pgvector (needs DATABASE_URL)
+	python -m services.rag.ingest --reset
 
 .PHONY: agent-demo
 agent-demo: ## Run a scripted agent query (offline unless ANTHROPIC_API_KEY is set)
 	python -m services.agent --aoi central_valley_ca --before 2023-06-15 --after 2023-09-15
+
+.PHONY: kb-demo
+kb-demo: ## Ask a sensor-metadata question answered from the knowledge base (RAG)
+	python -m services.agent --kb-only
 
 .PHONY: mcp-tools
 mcp-tools: ## List tools exposed by the MCP server over stdio
